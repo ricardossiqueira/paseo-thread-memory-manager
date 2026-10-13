@@ -1,0 +1,9 @@
+{
+  "id": "thread-memory-manager",
+  "name": "Thread Memory Manager",
+  "description": "Prompts to archive done threads, lets you bulk-archive them, and tracks how much worktree cache space archiving would free.",
+  "media": [],
+  "requirements": {
+    "paseo": ">=0.11.2"
+  }
+}
