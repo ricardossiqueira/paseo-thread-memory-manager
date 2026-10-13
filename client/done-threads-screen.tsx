@@ -2,7 +2,6 @@ import type { PluginTheme } from "@getpaseo/plugin";
 import type { PluginScreenProps } from "@getpaseo/plugin/client";
 import { usePaseo, useRpc } from "@getpaseo/plugin/client";
 import { Icon, ScrollView, TextInput, useToast } from "@getpaseo/plugin/client/react-native";
-import type { PaseoWorkspace } from "@getpaseo/client";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { getDiskUsageCacheRpc, refreshDiskUsageCacheRpc } from "../shared/disk-usage";
@@ -94,7 +93,8 @@ export function DoneThreadsScreen({ theme, layout }: PluginScreenProps) {
   const getDiskUsageCache = useRpc(getDiskUsageCacheRpc);
   const refreshDiskUsageCache = useRpc(refreshDiskUsageCacheRpc);
 
-  const [workspaces, setWorkspaces] = useState<readonly PaseoWorkspace[]>([]);
+  type WorkspaceEntry = Awaited<ReturnType<typeof paseo.workspaces.list>>["entries"][number];
+  const [workspaces, setWorkspaces] = useState<readonly WorkspaceEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [archiving, setArchiving] = useState(false);

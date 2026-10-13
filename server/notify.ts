@@ -1,12 +1,14 @@
-import type { PaseoApi } from "@getpaseo/client";
+import type { PluginHookContext } from "@getpaseo/plugin/server";
 import { DONE_PROMPT_KIND, DONE_PROMPT_VERSION, donePromptItemId } from "../shared/timeline-item";
+
+type Paseo = PluginHookContext["paseo"];
 
 // Tracks which workspaces already got a done-prompt appended, so a daemon
 // subprocess that stays alive across many turns doesn't re-append on every
 // subsequent `agent.turn_ended` while the workspace stays "done".
 const notifiedWorkspaceIds = new Set<string>();
 
-export async function checkWorkspaceDone(paseo: PaseoApi, workspaceId: string, agentId: string): Promise<void> {
+export async function checkWorkspaceDone(paseo: Paseo, workspaceId: string, agentId: string): Promise<void> {
   const workspace = await paseo.workspaces.ref(workspaceId).refresh();
   if (!workspace || workspace.status !== "done") {
     // Status moved on (resumed, archived elsewhere, etc.) — allow a future

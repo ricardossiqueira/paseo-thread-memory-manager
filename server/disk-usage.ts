@@ -1,8 +1,10 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { PaseoApi } from "@getpaseo/client";
+import type { PluginHandlerContext } from "@getpaseo/plugin/server";
 import { execCommand } from "@getpaseo/plugin/server";
+
+type Paseo = PluginHandlerContext["paseo"];
 
 const CACHE_DIR = join(tmpdir(), "paseo-thread-memory-manager");
 const CACHE_FILE = join(CACHE_DIR, "disk-usage-cache.json");
@@ -67,7 +69,7 @@ interface DoneWorkspace {
   reclaimable: boolean;
 }
 
-async function listDoneWorkspaces(paseo: PaseoApi): Promise<DoneWorkspace[]> {
+async function listDoneWorkspaces(paseo: Paseo): Promise<DoneWorkspace[]> {
   const result: DoneWorkspace[] = [];
   let cursor: string | undefined;
   for (;;) {
@@ -86,7 +88,7 @@ async function listDoneWorkspaces(paseo: PaseoApi): Promise<DoneWorkspace[]> {
   return result;
 }
 
-async function recomputeCache(paseo: PaseoApi): Promise<void> {
+async function recomputeCache(paseo: Paseo): Promise<void> {
   if (inProgress) return;
   inProgress = true;
   console.log("[thread-memory-manager] recomputing disk usage cache");
@@ -126,7 +128,7 @@ async function recomputeCache(paseo: PaseoApi): Promise<void> {
 }
 
 /** Called from lifecycle hooks; cheap no-op unless the cache is stale and idle. */
-export function maybeScheduleRecompute(paseo: PaseoApi): void {
+export function maybeScheduleRecompute(paseo: Paseo): void {
   if (inProgress) return;
   const lastRun = cache.updatedAt ? new Date(cache.updatedAt).getTime() : 0;
   if (Date.now() - lastRun < MIN_RECOMPUTE_INTERVAL_MS) return;
@@ -138,7 +140,7 @@ export async function getDiskUsageCache() {
   return { updatedAt: cache.updatedAt, inProgress, items: cache.items };
 }
 
-export async function refreshDiskUsageCache(_input: Record<string, never>, { paseo }: { paseo: PaseoApi }) {
+export async function refreshDiskUsageCache(_input: Record<string, never>, { paseo }: { paseo: Paseo }) {
   await loadCacheOnce();
   if (!inProgress) {
     void recomputeCache(paseo);
